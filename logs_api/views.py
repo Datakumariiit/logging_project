@@ -24,7 +24,12 @@ class DataChangeLogView(APIView):
             except User.DoesNotExist:
                 return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
             
-            logs = DataChangeLog.objects.filter(user=user_obj, model_name=model_name).order_by('-timestamp')
+            try:
+                content_type = ContentType.objects.get(model=model_name.lower())
+            except ContentType.DoesNotExist:
+                return Response({'error': 'Invalid model_name'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            logs = DataChangeLog.objects.filter(user=user_obj, content_type=content_type).order_by('-timestamp')
 
             data = [{
                 'action': log.action,

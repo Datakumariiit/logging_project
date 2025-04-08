@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from .models import DataChangeLog
 
 def log_data_change(instance, action, user=None, old_data=None):
@@ -19,7 +20,7 @@ def log_data_change(instance, action, user=None, old_data=None):
         }
 
     DataChangeLog.objects.create(
-        model_name=instance.__class__.__name__,
+        content_type=ContentType.objects.get_for_model(instance),
         object_id=instance.pk,
         action=action,
         changes=changes,
