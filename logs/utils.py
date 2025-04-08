@@ -3,7 +3,7 @@ from .models import DataChangeLog
 def log_data_change(instance, action, user=None, old_data=None):
     def serialize_instance(instance):
         return {
-            field.name: str(getattr(instance, field.name))  # 👈 Convert all to strings
+            field.name: str(getattr(instance, field.name))  #  Convert all to strings
             for field in instance._meta.fields
         }
 

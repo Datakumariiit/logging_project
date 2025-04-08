@@ -11,36 +11,30 @@ class DataChangeLogView(APIView):
     authentication_classes = [authentication.TokenAuthentication, authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, app_label, model_name, user):
+    def post(self, request):
         try:
-            # Dynamically get model
-            model = apps.get_model(app_label, model_name)
-            if not model:
-                return Response({'error': 'Invalid model'}, status=status.HTTP_400_BAD_REQUEST)
+            model_name = request.data.get('model_name')
+            username = request.data.get('user')
 
-            # Convert username to user object
+            if not model_name or not username:
+                return Response({'error': 'model_name and user are required fields.'}, status=status.HTTP_400_BAD_REQUEST)
+            
             try:
-                user_obj = User.objects.get(username=user)
+                user_obj = User.objects.get(username=username)
             except User.DoesNotExist:
                 return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            logs = DataChangeLog.objects.filter(user=user_obj, model_name=model_name).order_by('-timestamp')
 
-            # Fetch logs for this user and model name
-            print(user_obj)
-            print(model_name)
-            logs = DataChangeLog.objects.filter(user=user_obj).order_by('-timestamp')
-            print(logs)
-
-            data = []
-            for log in logs:
-                data.append({
-                    'action': log.action,
-                    'timestamp': log.timestamp,
-                    'user': log.user.username if log.user else None,
-                    'object_id': log.object_id,
-                    'changes': log.changes,
-                })
+            data = [{
+                'action': log.action,
+                'timestamp': log.timestamp,
+                'user': log.user.username if log.user else None,
+                'object_id': log.object_id,
+                'changes': log.changes,
+            } for log in logs]
 
             return Response({'data': data}, status=status.HTTP_200_OK)
-
+        
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
