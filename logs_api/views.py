@@ -15,21 +15,32 @@ class DataChangeLogView(APIView):
         try:
             model_name = request.data.get('model_name')
             username = request.data.get('user')
+            action = request.data.get('action')
+            object_id = request.data.get('object_id')
 
-            if not model_name or not username:
-                return Response({'error': 'model_name and user are required fields.'}, status=status.HTTP_400_BAD_REQUEST)
+            filters = {}
+
+            if username:
+                try:
+                    user_obj = User.objects.get(username=username)
+                    filters['user'] = user_obj
+                except User.DoesNotExist:
+                    return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
             
-            try:
-                user_obj = User.objects.get(username=username)
-            except User.DoesNotExist:
-                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            if model_name:
+                try:
+                    content_type=ContentType.objects.get(model=model_name.lower())
+                    filters['content_type'] = content_type
+                except ContentType.DoesNotExist:
+                    return Response({'error': 'Invalid model_name'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            if action:
+                filters['action'] = action
             
-            try:
-                content_type = ContentType.objects.get(model=model_name.lower())
-            except ContentType.DoesNotExist:
-                return Response({'error': 'Invalid model_name'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            logs = DataChangeLog.objects.filter(user=user_obj, content_type=content_type).order_by('-timestamp')
+            if object_id:
+                filters['object_id'] = object_id
+
+            logs = DataChangeLog.objects.filter(**filters).order_by('-timestamp')
 
             data = [{
                 'action': log.action,

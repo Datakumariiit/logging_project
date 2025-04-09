@@ -4,11 +4,9 @@ from django.apps import apps
 from logs.utils import log_data_change
 from middleware.current_user import get_current_user
 
-# Define models to track by app_label.model_name
 TRACKED_MODELS = [
     'myapp.Book',
     'myapp.Student',
-    # 'myapp.Publisher',
     # add more as needed
 ]
 
