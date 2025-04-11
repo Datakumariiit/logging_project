@@ -18,3 +18,11 @@ class Student(models.Model):
 
   def __str__(self):
     return self.name
+  
+class Employee(models.Model):
+  name = models.CharField(max_length=100)
+  empId = models.CharField(max_length=10)
+  department = models.CharField(max_length=20)
+  designation = models.CharField(max_length=20)
+  salary = models.IntegerField()
+  joining_date = models.DateField()

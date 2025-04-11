@@ -7,6 +7,7 @@ from middleware.current_user import get_current_user
 TRACKED_MODELS = [
     'myapp.Book',
     'myapp.Student',
+    'myapp.Employee',
     # add more as needed
 ]
 
